@@ -56,7 +56,7 @@ function managerOptions() {
 
     }
 
-  })
+  });
 }
 
 function listProducts() { //-------------------------------Display ALL items-----------------------
@@ -103,14 +103,14 @@ function updateInv() {
 
   ]).then(function(user) {
     invAdd = user.addInv;
-    amountAdd = user.amount;
-    console.log("Manager adding " + amountAdd + " units to: " + invAdd);//-----------
+    amountAdd = parseInt(user.amount);
+    console.log("Manager adding " + amountAdd + " unit(s) to: " + invAdd);//-----------
 
   var query = connection.query(
     "UPDATE products SET ? WHERE ?",
     [
       {
-        stock_quantity: stock_quantity+amountAdd
+        stock_quantity: stock_quantity + parseInt(amountAdd)
       },
       {
         product_name: invAdd

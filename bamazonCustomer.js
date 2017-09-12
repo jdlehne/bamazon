@@ -28,65 +28,62 @@ function listProducts() { //-------------------------------Display ALL items----
 
         inquirer.prompt([{ //-----------------------------------Ask what item customer wants-------------
             type: "input",
-            message: "Which item would you like to purchase (please enter an id number or item name)?",
+            message: "Which item would you like to purchase (please enter an id)?",
             name: "bidChoice"
 
         }]).then(function(user) { //---------------Ask Quantity-----------------------//
-            var chosenItem = user.bidChoice;
+            var chosenItem = parseInt(user.bidChoice);
             console.log("The id is: " + chosenItem);
+            for (var i = 0; i < results.length; i++) {
+              //console.log(results[i].id + " : " + results[i].product_name);
+                if (parseInt(chosenItem) === results[i].id) {
+                  chosenItem = results[i].product_name;
+                  var price = results[i].price;
+                  var stock = results[i].stock_quantity;
+                  console.log(chosenItem);  //----------checking to see if proper item shows up-----
+                }
+            }
 
             inquirer.prompt([{
                 name: "quantity",
                 type: "input",
-                message: "Please choose a quantity for " + user.bidChoice,
+                message: "Please choose a quantity for " + chosenItem,
                 validate: function(value) {
                     if (isNaN(value) === false) {
                         return true;
-
                     }
                     return false;
                 }
             }]).then(function(user) { //---------------Check Quantity-------------------//
-                //console.log(user.quantity);
                 console.log("User Requested: " + chosenItem + " : " + user.quantity);
-
-                for (var i = 0; i < results.length; i++) {
-                    if (results[i].product_name === chosenItem || results[i].id === chosenItem) {
-                        chosenItem = results[i];
-                        console.log(chosenItem); //----------checking to see if proper item shows up-----
-                    }
-                }
+                console.log(price);
                 //----------------------Placing Orders---------------------------------//
                 console.log("----------Checking inventory--------------");
-                if (user.quantity < chosenItem.stock_quantity) {
+                if (user.quantity < stock) {
                     console.log("Sufficient inventory to place order");
-                    console.log("Order Total will be: $" + user.quantity * chosenItem.price + ".");
-                    chosenItem.stock_quantity = chosenItem.stock_quantity - user.quantity;
+                    console.log("Order Total will be: $" + user.quantity * price + ".");
+                    stock = stock - user.quantity;
                     console.log("Thank you your order has been placed!");
-
-                    //updateProduct();
                     console.log("Updating inventory...\n");
                     var query = connection.query(
                       "UPDATE products SET ? WHERE ?",
                       [
                         {
-                          stock_quantity: chosenItem.stock_quantity = chosenItem.stock_quantity - user.quantity
+                          stock_quantity: stock = stock - user.quantity
 
                         },
                         {
-                          product_name: chosenItem.product_name
+                          product_name: chosenItem
                         }
                       ],
                       function(error, results) {
                         //console.log(results.affectedRows + " products updated!\n");
                       }
                     );
-                    // logs the actual query being run
-                    //console.log(query.sql);
-                    console.log(chosenItem.product_name + ": Inventory Remaining = " + chosenItem.stock_quantity);
+                    console.log(chosenItem + ": Inventory Remaining = " + stock);
                     connection.end();
                 } else {
-                    console.log("Insufficient Quantity!");
+                    console.log("Insufficient Quantity! Items left in inventory: " + stock);
                     inquirer.prompt([{
                         type: "confirm",
                         message: "Return to main product list?",
@@ -104,7 +101,6 @@ function listProducts() { //-------------------------------Display ALL items----
 
             })
         });
-
         //connection.end();
     });
 }

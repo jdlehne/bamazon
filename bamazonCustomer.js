@@ -9,8 +9,8 @@ var connection = mysql.createConnection({
     database: "bamazon"
 });
 
-connection.connect(function(err) {
-    if (err) throw err;
+connection.connect(function(error) {
+    if (error) throw err;
     console.log("connected as id " + connection.threadId);
     //connection.end();
     listProducts();
@@ -33,6 +33,8 @@ function listProducts() { //-------------------------------Display ALL items----
 
         }]).then(function(user) { //---------------Ask Quantity-----------------------//
             var chosenItem = user.bidChoice;
+            console.log("The id is: " + chosenItem);
+
             inquirer.prompt([{
                 name: "quantity",
                 type: "input",
@@ -45,13 +47,13 @@ function listProducts() { //-------------------------------Display ALL items----
                     return false;
                 }
             }]).then(function(user) { //---------------Check Quantity-------------------//
-                console.log(user.quantity);
+                //console.log(user.quantity);
                 console.log("User Requested: " + chosenItem + " : " + user.quantity);
 
                 for (var i = 0; i < results.length; i++) {
-                    if (results[i].product_name === chosenItem) {
+                    if (results[i].product_name === chosenItem || results[i].id === chosenItem) {
                         chosenItem = results[i];
-                        //console.log(chosenItem);//----------checking to see if proper item shows up
+                        console.log(chosenItem); //----------checking to see if proper item shows up-----
                     }
                 }
                 //----------------------Placing Orders---------------------------------//
@@ -60,16 +62,49 @@ function listProducts() { //-------------------------------Display ALL items----
                     console.log("Sufficient inventory to place order");
                     console.log("Order Total will be: $" + user.quantity * chosenItem.price + ".");
                     chosenItem.stock_quantity = chosenItem.stock_quantity - user.quantity;
+                    console.log("Thank you your order has been placed!");
+
+                    //updateProduct();
+                    console.log("Updating inventory...\n");
+                    var query = connection.query(
+                      "UPDATE products SET ? WHERE ?",
+                      [
+                        {
+                          stock_quantity: chosenItem.stock_quantity = chosenItem.stock_quantity - user.quantity
+
+                        },
+                        {
+                          product_name: chosenItem.product_name
+                        }
+                      ],
+                      function(error, results) {
+                        //console.log(results.affectedRows + " products updated!\n");
+                      }
+                    );
+                    // logs the actual query being run
+                    //console.log(query.sql);
                     console.log(chosenItem.product_name + ": Inventory Remaining = " + chosenItem.stock_quantity);
-
-
+                    connection.end();
                 } else {
                     console.log("Insufficient Quantity!");
+                    inquirer.prompt([{
+                        type: "confirm",
+                        message: "Return to main product list?",
+                        name: "confirm",
+                        default: true
+                    }]).then(function(user) {
+                        if (user.confirm) {
+                            listProducts();
+                        } else {
+                            connection.end();
+                        }
+                    })
+
                 }
 
             })
         });
 
-        connection.end();
+        //connection.end();
     });
 }

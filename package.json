@@ -1,0 +1,29 @@
+{
+  "name": "bamazon",
+  "version": "1.0.0",
+  "description": "Node and Sql app to simultae online marketplace",
+  "main": "bamazonCustomer.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jdlehne/bamazon.git"
+  },
+  "keywords": [
+    "node",
+    "mySQL",
+    "database",
+    "javascript"
+  ],
+  "author": "Josh Lehne",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jdlehne/bamazon/issues"
+  },
+  "homepage": "https://github.com/jdlehne/bamazon#readme",
+  "dependencies": {
+    "inquirer": "^3.2.3",
+    "mysql": "^2.14.1"
+  }
+}

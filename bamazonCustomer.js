@@ -19,16 +19,24 @@ connection.connect(function(error) {
 function listProducts() { //-------------------------------Display ALL items-----------------------
     console.log("Selecting all products...\n");
     connection.query("SELECT * FROM products", function(error, results, fields) {
-        if (error) throw error;
-        results.forEach(function(row) {
-            fields.forEach(function(field) {
-                console.log(field.name + ": " + row[field.name]);
-            });
+      console.log("\nID | Item Name | Department | Price\n");
+      for (var i = 0; i < results.length; i++) {
+          console.log(results[i].id + " | " + results[i].product_name + " | " + results[i].department_name + " | $" + results[i].price);
+          console.log("-----------------------------------------");
+      }
+
+      console.log("Which item would you like to purchase (please enter an id)?");
+
+        //if (error) throw error;
+      //  results.forEach(function(row) {
+            //fields.forEach(function(field) {
+            //    console.log(field.name + ": " + row[field.name]);
+            //});
         });
 
         inquirer.prompt([{ //-----------------------------------Ask what item customer wants-------------
             type: "input",
-            message: "Which item would you like to purchase (please enter an id)?",
+            message: "Which item would you like to purchase (please enter an id)?\n",
             name: "bidChoice"
 
         }]).then(function(user) { //---------------Ask Quantity-----------------------//
@@ -102,5 +110,5 @@ function listProducts() { //-------------------------------Display ALL items----
             })
         });
         //connection.end();
-    });
+  //  });
 }

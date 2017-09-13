@@ -78,7 +78,7 @@ function viewLow() {
         for (var i = 0; i < results.length; i++) {
             if (results[i].stock_quantity <= 5) {
                 console.log("-----------LOW INV--------------");
-                console.log(results[i].id + " | " + results[i].product_name + " | " + results[i].department_name + " | $" + results[i].price);
+                console.log(results[i].id + " | " + results[i].product_name + " | " + results[i].department_name + " | In Stock: " + results[i].stock_quantity);
             }
 
         }
@@ -102,26 +102,31 @@ function updateInv() {
         }
 
     ]).then(function(user) {
-        invAdd = user.addInv;
-        amountAdd = parseInt(user.amount);
-        console.log("Manager adding " + amountAdd + " unit(s) to: " + invAdd); //-----------
+
+        console.log("Manager adding " + user.amount + " unit(s) to: " + user.addInv);
+        connection.query("SELECT * FROM products WHERE ?", [{product_name:user.addInv}], function(error,results){
+          if (error) throw err;
+          var updateAmount = (parseInt(results[0].stock_quantity) + parseInt(user.amount));
 
         var query = connection.query(
-            "UPDATE products SET ? WHERE ?", [{
-                    stock_quantity: stock_quantity + parseInt(amountAdd)
+            "UPDATE products SET ? WHERE ?",
+              [
+                {
+                    stock_quantity: parseInt(results[0].stock_quantity) + parseInt(user.amount)
                 },
                 {
-                    product_name: invAdd
+                    product_name: user.addInv
                 }
-            ],
+              ],
             function(error, results) {
                 console.log(results.affectedRows + " products updated!\n");
+                connection.end();
             }
         );
-        // logs the actual query being run
-        console.log(query.sql);
-    }); ///-----------------------
+        //console.log(query.sql);
+    });
 
+});
 }
 
 function createProduct() {
@@ -147,7 +152,6 @@ function createProduct() {
             name: "inv",
         },
     ]).then(function(answers) {
-        console.log("answers recorded");
 
         console.log("Inserting a new product...\n");
         var query = connection.query(

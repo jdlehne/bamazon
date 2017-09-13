@@ -164,7 +164,8 @@ function createProduct() {
 
             function(err, res) {
                 console.log(res.affectedRows + " product inserted!\n");
-                connection.end();
+                listProducts(query);
+              
             }
         );
 

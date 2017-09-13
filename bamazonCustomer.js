@@ -1,5 +1,8 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
+var chosenItem;
+var price;
+var stock;
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -19,18 +22,18 @@ connection.connect(function(error) {
 function listProducts() { //-------------------------------Display ALL items-----------------------
     console.log("Selecting all products...\n");
     connection.query("SELECT * FROM products", function(error, results, fields) {
-      /*console.log("\nID | Item Name | Department | Price\n");
+      console.log("\nID | Item Name | Department | Price\n");
       for (var i = 0; i < results.length; i++) {
           console.log(results[i].id + " | " + results[i].product_name + " | " + results[i].department_name + " | $" + results[i].price);
           console.log("-----------------------------------------");
       }
 
-      console.log("Which item would you like to purchase (please enter an id)?");*/
-        if (error) throw error;
-        results.forEach(function(row) {
-            fields.forEach(function(field) {
-                console.log(field.name + ": " + row[field.name]);
-            });
+      console.log("Which item would you like to purchase (please enter an id)?");
+      //  if (error) throw error;
+        //results.forEach(function(row) {
+          //  fields.forEach(function(field) {
+              //  console.log(field.name + ": " + row[field.name]);
+            //});
         });
 
         inquirer.prompt([{ //-----------------------------------Ask what item customer wants-------------
@@ -39,17 +42,20 @@ function listProducts() { //-------------------------------Display ALL items----
             name: "bidChoice"
 
         }]).then(function(user) { //---------------Ask Quantity-----------------------//
-            var chosenItem = parseInt(user.bidChoice);
+             chosenItem = parseInt(user.bidChoice);
             console.log("The id is: " + chosenItem);
+            connection.query("SELECT * FROM products", function(error, results, fields) {
             for (var i = 0; i < results.length; i++) {
               //console.log(results[i].id + " : " + results[i].product_name);
                 if (parseInt(chosenItem) === results[i].id) {
                   chosenItem = results[i].product_name;
-                  var price = results[i].price;
-                  var stock = results[i].stock_quantity;
-                  console.log(chosenItem);  //----------checking to see if proper item shows up-----
+                   price = results[i].price;
+                   stock = results[i].stock_quantity;
+                  console.log(chosenItem +": "+ price);  //----------checking to see if proper item shows up-----
                 }
             }
+
+          });
 
             inquirer.prompt([{
                 name: "quantity",
@@ -63,10 +69,11 @@ function listProducts() { //-------------------------------Display ALL items----
                 }
             }]).then(function(user) { //---------------Check Quantity-------------------//
                 console.log("User Requested: " + chosenItem + " : " + user.quantity);
-                console.log(price);
+                var newQty = stock-user.quantity;
+                console.log( "New Quantity: " + newQty);
                 //----------------------Placing Orders---------------------------------//
                 console.log("----------Checking inventory--------------");
-                if (user.quantity < stock) {
+                if (newQty >= 0) {
                     console.log("Sufficient inventory to place order");
                     console.log("Order Total will be: $" + user.quantity * price + ".");
                     stock = stock - user.quantity;
@@ -76,7 +83,7 @@ function listProducts() { //-------------------------------Display ALL items----
                       "UPDATE products SET ? WHERE ?",
                       [
                         {
-                          stock_quantity: stock = stock - user.quantity
+                          stock_quantity: stock = newQty
 
                         },
                         {
@@ -109,5 +116,4 @@ function listProducts() { //-------------------------------Display ALL items----
             });
         });
         //connection.end();
-    });
-}
+    }

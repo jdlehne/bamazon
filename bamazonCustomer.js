@@ -3,6 +3,7 @@ var inquirer = require("inquirer");
 var chosenItem;
 var price;
 var stock;
+var name;
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -15,62 +16,43 @@ var connection = mysql.createConnection({
 connection.connect(function(error) {
     if (error) throw err;
     console.log("connected as id " + connection.threadId);
-    //connection.end();
     listProducts();
 });
 
 function listProducts() { //-------------------------------Display ALL items-----------------------
     console.log("Selecting all products...\n");
     connection.query("SELECT * FROM products", function(error, results, fields) {
-      console.log("\nID | Item Name | Department | Price\n");
-      for (var i = 0; i < results.length; i++) {
-          console.log(results[i].id + " | " + results[i].product_name + " | " + results[i].department_name + " | $" + results[i].price);
-          console.log("-----------------------------------------");
-      }
+        console.log("\nID | Item Name | Department | Price\n");
+        for (var i = 0; i < results.length; i++) {
+            console.log(results[i].id + " | " + results[i].product_name + " | " + results[i].department_name + " | $" + results[i].price);
+            console.log("-----------------------------------------");
+        }
 
-      console.log("Which item would you like to purchase (please enter an id)?");
-      //  if (error) throw error;
-        //results.forEach(function(row) {
-          //  fields.forEach(function(field) {
-              //  console.log(field.name + ": " + row[field.name]);
-            //});
-        });
-
-        inquirer.prompt([{ //-----------------------------------Ask what item customer wants-------------
+        inquirer.prompt([{ //----------------------Ask what item customer wants-------------
             type: "input",
             message: "Which item would you like to purchase (please enter an id)?\n",
             name: "bidChoice"
 
         }]).then(function(user) { //---------------Ask Quantity-----------------------//
-             chosenItem = parseInt(user.bidChoice);
-            console.log("The id is: " + chosenItem);
-            connection.query("SELECT * FROM products", function(error, results, fields) {
-            for (var i = 0; i < results.length; i++) {
-              //console.log(results[i].id + " : " + results[i].product_name);
-                if (parseInt(chosenItem) === results[i].id) {
-                  chosenItem = results[i].product_name;
-                   price = results[i].price;
-                   stock = results[i].stock_quantity;
-                  console.log(chosenItem +": "+ price);  //----------checking to see if proper item shows up-----
-                }
-            }
 
-          });
+                for (var i = 0; i < results.length; i++) {
+                    if (parseInt(user.bidChoice) === results[i].id) {
+                        var name = results[i].product_name;
+                        price = results[i].price;
+                        stock = results[i].stock_quantity;
+                        console.log(name); //----------checking to see if proper item shows up-----
+                    }
+                }
 
             inquirer.prompt([{
                 name: "quantity",
                 type: "input",
-                message: "Please choose a quantity for " + chosenItem,
-                validate: function(value) {
-                    if (isNaN(value) === false) {
-                        return true;
-                    }
-                    return false;
-                }
+                message: "Please choose a quantity for " + name,
+
             }]).then(function(user) { //---------------Check Quantity-------------------//
-                console.log("User Requested: " + chosenItem + " : " + user.quantity);
-                var newQty = stock-user.quantity;
-                console.log( "New Quantity: " + newQty);
+                console.log("User wants to purchase " + user.quantity + " unit(s) of " + name);
+                var newQty = stock - user.quantity;
+
                 //----------------------Placing Orders---------------------------------//
                 console.log("----------Checking inventory--------------");
                 if (newQty >= 0) {
@@ -80,21 +62,19 @@ function listProducts() { //-------------------------------Display ALL items----
                     console.log("Thank you your order has been placed!");
                     console.log("Updating inventory...\n");
                     var query = connection.query(
-                      "UPDATE products SET ? WHERE ?",
-                      [
-                        {
-                          stock_quantity: stock = newQty
+                        "UPDATE products SET ? WHERE ?", [{
+                                stock_quantity: stock = newQty
 
-                        },
-                        {
-                          product_name: chosenItem
+                            },
+                            {
+                                product_name: name
+                            }
+                        ],
+                        function(error, results) {
+
                         }
-                      ],
-                      function(error, results) {
-                        //console.log(results.affectedRows + " products updated!\n");
-                      }
                     );
-                    console.log(chosenItem + ": Inventory Remaining = " + stock);
+                    console.log(name + ": Inventory Remaining = " + stock);
                     connection.end();
                 } else {
                     console.log("Insufficient Quantity! Items left in inventory: " + stock);
@@ -115,5 +95,7 @@ function listProducts() { //-------------------------------Display ALL items----
 
             });
         });
-        //connection.end();
-    }
+
+    });
+
+}

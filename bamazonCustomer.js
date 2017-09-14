@@ -4,6 +4,7 @@ var chosenItem;
 var price;
 var stock;
 var name;
+var saleTotal;
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -15,7 +16,7 @@ var connection = mysql.createConnection({
 
 connection.connect(function(error) {
     if (error) throw err;
-    console.log("connected as id " + connection.threadId);
+    //console.log("connected as id " + connection.threadId);
     listProducts();
 });
 
@@ -40,7 +41,8 @@ function listProducts() { //-------------------------------Display ALL items----
                         var name = results[i].product_name;
                         price = results[i].price;
                         stock = results[i].stock_quantity;
-                        console.log(name); //----------checking to see if proper item shows up-----
+                        saleTotal = results[i].product_sales;
+                        console.log("PS = " + saleTotal); //----------checking to see if proper item shows up-----
                     }
                 }
 
@@ -57,23 +59,17 @@ function listProducts() { //-------------------------------Display ALL items----
                 console.log("----------Checking inventory--------------");
                 if (newQty >= 0) {
                     console.log("Sufficient inventory to place order");
-                    console.log("Order Total will be: $" + user.quantity * price + ".");
+                    saleTotal = user.quantity *price;
+                    console.log("Order Total will be: $" + saleTotal + ".");
+                    saleTotal = user.quantity *price;
                     stock = stock - user.quantity;
                     console.log("Thank you your order has been placed!");
                     console.log("Updating inventory...\n");
-                    var query = connection.query(
-                        "UPDATE products SET ? WHERE ?", [{
-                                stock_quantity: stock = newQty
-
-                            },
-                            {
-                                product_name: name
-                            }
-                        ],
+                    connection.query(
+                        "UPDATE products SET ? WHERE ?", [{stock_quantity: stock = newQty},  {product_name: name}],
                         function(error, results) {
-
-                        }
-                    );
+                          //console.log(error);
+                        });                    
                     console.log(name + ": Inventory Remaining = " + stock);
                     connection.end();
                 } else {

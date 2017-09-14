@@ -10,6 +10,7 @@ CREATE TABLE products (
   department_name VARCHAR(45) NULL,
   price DECIMAL(10,2) NULL,
   stock_quantity INT default 0,
+  product_sales INT default 0,
   PRIMARY KEY (id)
 );
 
@@ -21,3 +22,11 @@ VALUES ("Strings", "gear", 7.50, 100),("Chromatic Tuner", "gear", 20, 20),("Guit
 
 INSERT INTO products (product_name, department_name, price, stock_quantity)
 VALUES ("Delay", "pedals", 50.50, 4),("Fuzzbox", "pedals", 48, 10),("Reverb", "pedals", 64, 5),("Flanger", "pedals", 55.75, 10);
+
+
+CREATE TABLE departments (
+  department_id  INT NOT NULL AUTO_INCREMENT,
+  department_name VARCHAR(45) NULL,
+  over_head_costs INT default 0,
+  PRIMARY KEY (department_id)
+);

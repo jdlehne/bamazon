@@ -30,7 +30,7 @@ function managerOptions() {
         ]
     }, ]).then(function(answer) {
         //console.log(JSON.stringify(answer, null, '  '));
-        //console.log(answer.operation);
+      
         choice = answer.operation;
 
         switch (choice) {
@@ -165,10 +165,10 @@ function createProduct() {
             function(err, res) {
                 console.log(res.affectedRows + " product inserted!\n");
                 listProducts(query);
-              
+
             }
         );
 
     });
-    // logs the actual query being run
+
 }

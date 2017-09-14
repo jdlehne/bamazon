@@ -22,17 +22,16 @@ connection.connect(function(error) {
 });
 
 function listProducts() { //-------------------------------Display ALL items-----------------------
-
-var table = new Table({
-              head: ['ItemID', 'Department', 'ProductName', 'Price', 'Quantity'],
-              colWidths: [10, 20, 20, 10, 10]
-          });
-          connection.query("SELECT * FROM products", function(error, results, fields) {
-      for (var i=0; i < results.length; i++) {
-          var bamTable = [results[i].id, results[i].department_name, results[i].product_name, results[i].price, results[i].stock_quantity];
-          table.push(bamTable);
-      }
-      console.log(table.toString());
+    var table = new Table({
+        head: ['ItemID', 'Department', 'ProductName', 'Price', 'Quantity'],
+        colWidths: [10, 20, 20, 10, 10]
+    });
+    connection.query("SELECT * FROM products", function(error, results, fields) {
+        for (var i = 0; i < results.length; i++) {
+            var bamTable = [results[i].id, results[i].department_name, results[i].product_name, results[i].price, results[i].stock_quantity];
+            table.push(bamTable);
+        }
+        console.log(table.toString());
     });
     connection.query("SELECT * FROM products", function(error, results, fields) {
         inquirer.prompt([{ //----------------------Ask what item customer wants-------------
@@ -42,15 +41,15 @@ var table = new Table({
 
         }]).then(function(user) { //---------------Ask Quantity-----------------------//
 
-                for (var i = 0; i < results.length; i++) {
-                    if (parseInt(user.bidChoice) === results[i].id) {
-                        var name = results[i].product_name;
-                        price = results[i].price;
-                        stock = results[i].stock_quantity;
-                        saleTotal = results[i].product_sales;
-                        //console.log("PS = " + saleTotal); //----------checking to see if proper item shows up-----
-                    }
+            for (var i = 0; i < results.length; i++) {
+                if (parseInt(user.bidChoice) === results[i].id) {
+                    var name = results[i].product_name;
+                    price = results[i].price;
+                    stock = results[i].stock_quantity;
+                    oldTotal = results[i].product_sales;
+                    //console.log("PS = " + saleTotal); //----------checking to see if proper item shows up-----
                 }
+            }
 
             inquirer.prompt([{
                 name: "quantity",
@@ -60,22 +59,36 @@ var table = new Table({
             }]).then(function(user) { //---------------Check Quantity-------------------//
                 console.log("User wants to purchase " + user.quantity + " unit(s) of " + name);
                 var newQty = stock - user.quantity;
+                var newSales = user.quantity * price;
 
                 //----------------------Placing Orders---------------------------------//
                 console.log("----------Checking inventory--------------");
                 if (newQty >= 0) {
                     console.log("Sufficient inventory to place order");
-                    saleTotal = user.quantity *price;
-                    console.log("Order Total will be: $" + saleTotal + ".");
-                    saleTotal = user.quantity *price;
+                    console.log("Order Total will be: $" + newSales + ".");
                     stock = stock - user.quantity;
                     console.log("Thank you your order has been placed!");
                     console.log("Updating inventory...\n");
                     connection.query(
-                        "UPDATE products SET ? WHERE ?", [{stock_quantity: stock = newQty},  {product_name: name}],
+                        "UPDATE products SET ? WHERE ?", [{
+                            stock_quantity: stock = newQty
+                        }, {
+                            product_name: name
+                        }],
                         function(error, results) {
-                          //console.log(error);
+                            //console.log(error);
                         });
+                        connection.query(
+                            "UPDATE products SET ? WHERE ?", [{
+                                product_sales: oldTotal + newSales
+                            }, {
+                                product_name: name
+                            }],
+                            function(error, results) {
+                                //console.log(error);
+                            });
+                          
+                    console.log("Total Sales = $" + add(oldTotal,newSales));
                     console.log(name + ": Inventory Remaining = " + stock);
                     connection.end();
                 } else {
@@ -100,4 +113,8 @@ var table = new Table({
 
     });
 
+}
+
+function add (x, y) {
+  return parseFloat(x) + parseFloat(y)
 }

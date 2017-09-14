@@ -1,6 +1,7 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 var Table = require('cli-table');
+var Tablefy = require('tablefy');
 
 var connection = mysql.createConnection({
   host: "localhost",
@@ -34,7 +35,8 @@ function superOptions() {
         break;
 
       case 'Create New Department':
-        console.log("2");
+        console.log("2");//-----testing
+        listProductsTablefy();
         break;
 
       default:
@@ -64,5 +66,13 @@ function listProducts() {
 
     console.log(table.toString());
   });
+
+}
+
+function listProductsTablefy(){
+ var table = new Tablefy()
+ connection.query("SELECT * FROM products", function(err,res){
+   table.draw(res);
+ });
 
 }

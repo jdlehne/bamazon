@@ -1,5 +1,6 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
+var Table = require('cli-table');
 var choice;
 var invAdd;
 var amountAdd;
@@ -30,7 +31,7 @@ function managerOptions() {
         ]
     }, ]).then(function(answer) {
         //console.log(JSON.stringify(answer, null, '  '));
-      
+
         choice = answer.operation;
 
         switch (choice) {
@@ -60,28 +61,36 @@ function managerOptions() {
 }
 
 function listProducts() { //-------------------------------Display ALL items-----------------------
-    console.log("Selecting all products...\n");
+    var table = new Table({
+        head: ['ItemID', 'Department', 'ProductName', 'Price', 'Quantity'],
+        colWidths: [10, 20, 20, 10, 10]
+    });
     connection.query("SELECT * FROM products", function(error, results, fields) {
-        console.log("\nID | Item Name | Department | Price\n");
         for (var i = 0; i < results.length; i++) {
-            console.log(results[i].id + " | " + results[i].product_name + " | " + results[i].department_name + " | $" + results[i].price);
-            console.log("-----------------------------------------");
+            var bamTable = [results[i].id, results[i].department_name, results[i].product_name, results[i].price, results[i].stock_quantity];
+            table.push(bamTable);
         }
+        console.log(table.toString());
         connection.end();
     });
 }
 
 function viewLow() {
     console.log("Showing proudcts with an inventory less than 5...\n");
+    var table = new Table({
+        head: ['ItemID', 'Department', 'ProductName', 'Price', 'Quantity'],
+        colWidths: [10, 20, 20, 10, 10]
+    });
     connection.query("SELECT * FROM products", function(error, results) {
-        console.log("\nID | Item Name | Department | Price");
+
         for (var i = 0; i < results.length; i++) {
             if (results[i].stock_quantity <= 5) {
-                console.log("-----------LOW INV--------------");
-                console.log(results[i].id + " | " + results[i].product_name + " | " + results[i].department_name + " | In Stock: " + results[i].stock_quantity);
-            }
+                var lowTable = [results[i].id, results[i].department_name, results[i].product_name, results[i].price, results[i].stock_quantity];
+                table.push(lowTable);
 
+            }
         }
+        console.log(table.toString());
         console.log("\nAll other items meet acceptable stock");
         connection.end();
     });
@@ -104,29 +113,29 @@ function updateInv() {
     ]).then(function(user) {
 
         console.log("Manager adding " + user.amount + " unit(s) to: " + user.addInv);
-        connection.query("SELECT * FROM products WHERE ?", [{product_name:user.addInv}], function(error,results){
-          if (error) throw err;
-          var updateAmount = (parseInt(results[0].stock_quantity) + parseInt(user.amount));
+        connection.query("SELECT * FROM products WHERE ?", [{
+            product_name: user.addInv
+        }], function(error, results) {
+            if (error) throw err;
+            var updateAmount = (parseInt(results[0].stock_quantity) + parseInt(user.amount));
 
-        var query = connection.query(
-            "UPDATE products SET ? WHERE ?",
-              [
-                {
-                    stock_quantity: parseInt(results[0].stock_quantity) + parseInt(user.amount)
-                },
-                {
-                    product_name: user.addInv
+            var query = connection.query(
+                "UPDATE products SET ? WHERE ?", [{
+                        stock_quantity: parseInt(results[0].stock_quantity) + parseInt(user.amount)
+                    },
+                    {
+                        product_name: user.addInv
+                    }
+                ],
+                function(error, results) {
+                    console.log(results.affectedRows + " products updated!\n");
+                    connection.end();
                 }
-              ],
-            function(error, results) {
-                console.log(results.affectedRows + " products updated!\n");
-                connection.end();
-            }
-        );
-        //console.log(query.sql);
-    });
+            );
+            //console.log(query.sql);
+        });
 
-});
+    });
 }
 
 function createProduct() {

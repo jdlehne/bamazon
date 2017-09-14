@@ -1,5 +1,6 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
+var Table = require('cli-table');
 var chosenItem;
 var price;
 var stock;
@@ -21,14 +22,19 @@ connection.connect(function(error) {
 });
 
 function listProducts() { //-------------------------------Display ALL items-----------------------
-    console.log("Selecting all products...\n");
-    connection.query("SELECT * FROM products", function(error, results, fields) {
-        console.log("\nID | Item Name | Department | Price\n");
-        for (var i = 0; i < results.length; i++) {
-            console.log(results[i].id + " | " + results[i].product_name + " | " + results[i].department_name + " | $" + results[i].price);
-            console.log("-----------------------------------------");
-        }
 
+var table = new Table({
+              head: ['ItemID', 'Department', 'ProductName', 'Price', 'Quantity'],
+              colWidths: [10, 20, 20, 10, 10]
+          });
+          connection.query("SELECT * FROM products", function(error, results, fields) {
+      for (var i=0; i < results.length; i++) {
+          var bamTable = [results[i].id, results[i].department_name, results[i].product_name, results[i].price, results[i].stock_quantity];
+          table.push(bamTable);
+      }
+      console.log(table.toString());
+    });
+    connection.query("SELECT * FROM products", function(error, results, fields) {
         inquirer.prompt([{ //----------------------Ask what item customer wants-------------
             type: "input",
             message: "Which item would you like to purchase (please enter an id)?\n",
@@ -42,7 +48,7 @@ function listProducts() { //-------------------------------Display ALL items----
                         price = results[i].price;
                         stock = results[i].stock_quantity;
                         saleTotal = results[i].product_sales;
-                        console.log("PS = " + saleTotal); //----------checking to see if proper item shows up-----
+                        //console.log("PS = " + saleTotal); //----------checking to see if proper item shows up-----
                     }
                 }
 
@@ -69,7 +75,7 @@ function listProducts() { //-------------------------------Display ALL items----
                         "UPDATE products SET ? WHERE ?", [{stock_quantity: stock = newQty},  {product_name: name}],
                         function(error, results) {
                           //console.log(error);
-                        });                    
+                        });
                     console.log(name + ": Inventory Remaining = " + stock);
                     connection.end();
                 } else {

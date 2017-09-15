@@ -106,7 +106,7 @@ function updateInv() {
         },
         {
             type: "input",
-            message: "how many would you like to add?",
+            message: "How many would you like to add?",
             name: "amount"
         }
 

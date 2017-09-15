@@ -65,6 +65,7 @@ function listProducts() {
     }
 
     console.log(table.toString());
+    connection.end();
   });
 
 }

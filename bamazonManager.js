@@ -62,12 +62,12 @@ function managerOptions() {
 
 function listProducts() { //-------------------------------Display ALL items-----------------------
     var table = new Table({
-        head: ['ItemID', 'Department', 'ProductName', 'Price', 'Quantity'],
+        head: ['ItemID', 'ProductName', 'Department', 'Price', 'Quantity'],
         colWidths: [10, 20, 20, 10, 10]
     });
     connection.query("SELECT * FROM products", function(error, results, fields) {
         for (var i = 0; i < results.length; i++) {
-            var bamTable = [results[i].id, results[i].department_name, results[i].product_name, results[i].price, results[i].stock_quantity];
+            var bamTable = [results[i].id, results[i].product_name, results[i].department_name, results[i].price, results[i].stock_quantity];
             table.push(bamTable);
         }
         console.log(table.toString());

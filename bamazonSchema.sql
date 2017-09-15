@@ -30,3 +30,5 @@ CREATE TABLE departments (
   over_head_costs INT default 0,
   PRIMARY KEY (department_id)
 );
+
+SELECT * FROM departments d LEFT JOIN products p ON d.department_id = p.id
